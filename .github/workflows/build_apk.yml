@@ -1,50 +1,42 @@
 name: Build and Release APK
 
 on:
-push:
-tags:
-\- 'v\*' # Trigger berjalan otomatis ketika Anda membuat tag baru (contoh: v1.0.0)
+  push:
+    tags:
+      - 'v*' # Trigger berjalan otomatis ketika Anda membuat tag baru (contoh: v1.0.0)
 
 jobs:
-build:
-name: Build Flutter APK
-runs-on: ubuntu-latest
+  build:
+    name: Build APK Release
+    runs-on: ubuntu-latest
 
-```
-steps:
-  # 1. Checkout repository
-  - name: Checkout code
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  # 2. Setup Java (Dibutuhkan untuk build Android)
-  - name: Set up Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: 'zulu'
-      java-version: '17'
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-  # 3. Setup Flutter SDK
-  - name: Set up Flutter
-    uses: subosito/flutter-action@v2
-    with:
-      flutter-version: '3.19.x' # Sesuaikan dengan versi Flutter project Anda
-      channel: 'stable'
-      cache: true
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+          cache: true
 
-  # 4. Install dependencies
-  - name: Install dependencies
-    run: flutter pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
-  # 5. Build APK Release
-  - name: Build APK
-    run: flutter build apk --release
+      - name: Build APK Release
+        run: flutter build apk --release
 
-  # 6. Upload hasil APK ke GitHub Releases
-  - name: Create Release and Upload APK
-    uses: softprops/action-gh-release@v2
-    with:
-      files: build/app/outputs/flutter-apk/app-release.apk
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-```
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
